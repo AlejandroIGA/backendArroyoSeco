@@ -1,4 +1,4 @@
-package mx.edu.uteq.backend.model.entity;
+package mx.edu.uteq.backend.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,8 +8,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
-import java.sql.Date;
+// import java.math.BigInteger; // <-- Ya no necesitamos esto
+import java.util.Date;
 
 @Entity
 @Table(name = "user")
@@ -17,20 +20,22 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // <-- CORRECCIÓN 1: Cambiado a Long
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private String psw; 
+    private String psw;
 
     @Column(nullable = false)
     private String role;
 
-    @Column(name = "creation_date", nullable = false) 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "creation_date", nullable = false)
     private Date creationDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "log_date")
     private Date logDate;
 
@@ -38,15 +43,18 @@ public class User {
     @JoinColumn(name = "user_profile_id", unique = true)
     private UserProfile userProfile;
 
-    
-    public Long getId() {
+
+    // --- GETTERS Y SETTERS CORREGIDOS ---
+
+    public Long getId() { // <-- CORRECCIÓN 2: Ahora coincide (devuelve Long)
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id) { // <-- CORRECCIÓN 3: Ahora coincide (recibe Long)
         this.id = id;
     }
 
+    // El resto de los getters y setters ya estaban bien
     public String getEmail() {
         return email;
     }

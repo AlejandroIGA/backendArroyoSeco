@@ -1,4 +1,4 @@
-package mx.edu.uteq.backend.model.entity;
+package mx.edu.uteq.backend.model;
 
 import jakarta.persistence.*; 
 
