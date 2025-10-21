@@ -1,7 +1,7 @@
 package mx.edu.uteq.backend.model;
 
-import java.util.Map;
 
+import java.util.Map;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -52,3 +52,4 @@ public class Property{
     private Map<String, Object> description;
 
 }
+
