@@ -10,8 +10,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-
-// import java.math.BigInteger; // <-- Ya no necesitamos esto
 import java.util.Date;
 
 @Entity
@@ -20,13 +18,13 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // <-- CORRECCIÓN 1: Cambiado a Long
+    private Long id; 
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private String psw;
+    private String password;
 
     @Column(nullable = false)
     private String role;
@@ -44,17 +42,14 @@ public class User {
     private UserProfile userProfile;
 
 
-    // --- GETTERS Y SETTERS CORREGIDOS ---
-
-    public Long getId() { // <-- CORRECCIÓN 2: Ahora coincide (devuelve Long)
+    public Long getId() { 
         return id;
     }
 
-    public void setId(Long id) { // <-- CORRECCIÓN 3: Ahora coincide (recibe Long)
+    public void setId(Long id) { 
         this.id = id;
     }
 
-    // El resto de los getters y setters ya estaban bien
     public String getEmail() {
         return email;
     }
@@ -63,12 +58,12 @@ public class User {
         this.email = email;
     }
 
-    public String getPsw() {
-        return psw;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPsw(String psw) {
-        this.psw = psw;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRole() {
