@@ -6,24 +6,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import mx.edu.uteq.backend.model.User;
-import mx.edu.uteq.backend.repository.UserRepository;
 import mx.edu.uteq.backend.dto.RegisterRequestDTO;
 import mx.edu.uteq.backend.service.UserService;
 
-
-import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
-    // 2. DECLARAR EL SERVICIO COMO UN CAMPO FINAL Y PRIVADO
     private final UserService userService;
-    @Autowired
-    private UserRepository userRepository;
 
-    // 3. USAR INYECCIÓN POR CONSTRUCTOR (LA MEJOR PRÁCTICA)
-    // Spring se encargará de pasar una instancia de UserService aquí.
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -31,35 +25,80 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User user) {
-        
-        Optional<User> userOptional = userRepository.findByEmailAndPsw(
-            user.getEmail(),
-            user.getPsw()
-        );
-
-        if (userOptional.isPresent()) {
-            User foundUser = userOptional.get();
-            
-            return ResponseEntity.ok("Bienvenido, tu rol es: " + foundUser.getRole());
-            
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
+        try {
+            User loggedUser = userService.loginUser(user.getEmail(), user.getPassword());
+            return ResponseEntity.ok("Bienvenido, tu rol es: " + loggedUser.getRole());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {
+    try {
+        userService.registerUser(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    } catch (Exception e) {
+        e.printStackTrace(); 
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al registrar el usuario.");
+    }
+}
+
+    // -------------------------------------- Restablecer contraseña -----------------------------------------
+
+    @PostMapping("/reset")
+    public ResponseEntity<?> sendResetCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "El email es obligatorio"));
+        }
+
         try {
-            // Llama al método en el servicio, que contiene toda la lógica de negocio.
-            userService.registerUser(registerRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
+            String result = userService.sendResetCode(email);
+            return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
-            // Captura errores específicos como "email ya en uso".
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.ok("Código de verificación enviado");
         } catch (Exception e) {
-            // Captura cualquier otro error inesperado.
-            e.printStackTrace(); // Muy útil para ver el error completo en la consola.
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al registrar el usuario.");
+            return ResponseEntity.badRequest().body("No se pudo enviar el código de verificación");
         }
     }
+
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<String> verifyCode(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String code = payload.get("code");
+    boolean verified = userService.verifyCode(email, code);
+
+    if(verified) {
+        return ResponseEntity.ok("Código verificado correctamente");
+        } else {
+        return ResponseEntity.badRequest().body("Código inválido");
+        }
+    }
+
+
+    @PostMapping("/reset-password")
+public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String code = payload.get("code");
+    String newPassword = payload.get("newPassword");
+
+    if(email == null || code == null || newPassword == null) {
+        return ResponseEntity.badRequest().body("Todos los campos son obligatorios");
+    }
+
+    try {
+        String mensaje = userService.resetPassword(email, code, newPassword);
+        return ResponseEntity.ok(mensaje);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------
+
 }
