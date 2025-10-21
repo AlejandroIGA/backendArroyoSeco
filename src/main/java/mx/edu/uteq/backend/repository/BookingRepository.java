@@ -17,5 +17,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByStatus(String status);
 
+    // case-insensitive lookup convenience
+    List<Booking> findByStatusIgnoreCase(String status);
+
     List<Booking> findByStartDateBetween(Date from, Date to);
 }
