@@ -1,5 +1,6 @@
 package mx.edu.uteq.backend.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,8 +38,8 @@ public class User {
     @Column(name = "log_date")
     private Date logDate;
 
-    @OneToOne
-    @JoinColumn(name = "user_profile_id", unique = true)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_profile_id", referencedColumnName = "id")
     private UserProfile userProfile;
 
 

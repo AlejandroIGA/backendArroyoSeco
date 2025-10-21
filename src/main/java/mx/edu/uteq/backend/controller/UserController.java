@@ -35,16 +35,16 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {
-        try {
-            userService.registerUser(registerRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace(); 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al registrar el usuario.");
-        }
+    try {
+        userService.registerUser(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    } catch (Exception e) {
+        e.printStackTrace(); 
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno al registrar el usuario.");
     }
+}
 
     // -------------------------------------- Restablecer contraseña -----------------------------------------
 
