@@ -1,6 +1,7 @@
 package mx.edu.uteq.backend.model;
 
 
+import java.util.List;
 import java.util.Map;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -50,6 +51,11 @@ public class Property{
     @MapKeyColumn(name = "description_key")
     @Column(name = "description_value", columnDefinition = "json")
     private Map<String, Object> description;
+
+    @ElementCollection
+    @CollectionTable(name = "property_image", joinColumns = @JoinColumn(name = "property_id"))
+    @Column(name = "image_url")
+    private List<String> imagen;
 
 }
 
