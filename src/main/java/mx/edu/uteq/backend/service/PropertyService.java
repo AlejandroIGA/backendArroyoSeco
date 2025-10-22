@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import mx.edu.uteq.backend.dto.PropertyDTO;
 import mx.edu.uteq.backend.model.Property;
-import mx.edu.uteq.backend.model.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
