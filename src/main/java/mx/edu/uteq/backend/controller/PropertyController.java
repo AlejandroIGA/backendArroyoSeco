@@ -22,21 +22,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/api/properties")
 public class PropertyController {
     
-    
-    private final PropertyService propertyService;
-
-    public PropertyController(PropertyService propertyService){
-        this.propertyService = propertyService;
-    }
-
-    
+    @Autowired
+    private PropertyService propertyService;
 
     @GetMapping
     public List<PropertyDTO> getProperties() {
         return propertyService.getProperties();
     }
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id){
         return propertyService.getPropertyById(id)
             .map(ResponseEntity::ok)
@@ -58,7 +52,7 @@ public class PropertyController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteProperty(@RequestBody Long id){
+    public ResponseEntity<String> deleteProperty(@PathVariable Long id){
         try{
             propertyService.deleteProperty(id);
             return ResponseEntity.ok("Propiedad eliminada con exito");
@@ -70,8 +64,8 @@ public class PropertyController {
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateProperty(@PathVariable String id, @RequestBody PropertyDTO dto) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateProperty(@PathVariable Long id, @RequestBody PropertyDTO dto) {
         try{
             PropertyDTO updatedProperty = propertyService.updateProperty(id, dto);
             return ResponseEntity.ok(updatedProperty);
@@ -81,4 +75,5 @@ public class PropertyController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al intentar actualizar propiedad");
         }
+    }
 }
