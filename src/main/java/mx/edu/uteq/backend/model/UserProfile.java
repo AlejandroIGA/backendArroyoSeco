@@ -1,13 +1,14 @@
 package mx.edu.uteq.backend.model;
 
 import jakarta.persistence.*; 
+import java.io.Serializable;
 
 @Entity
 @Table(name = "user_profile")
-public class UserProfile {
+public class UserProfile implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;

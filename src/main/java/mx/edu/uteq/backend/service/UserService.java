@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import mx.edu.uteq.backend.dto.RegisterRequestDTO;
 import mx.edu.uteq.backend.model.PasswordReset;
 import mx.edu.uteq.backend.model.User;
+import mx.edu.uteq.backend.model.UserProfile;
 import mx.edu.uteq.backend.repository.PasswordResetRepository;
+import mx.edu.uteq.backend.repository.UserProfileRepository;
 import mx.edu.uteq.backend.repository.UserRepository;
 
 import java.util.Date;
@@ -27,6 +29,9 @@ public class UserService {
     }
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Autowired
+    private UserProfileRepository userProfileRepository;
 
     @Autowired
     private PasswordResetRepository resetRepository;
@@ -52,24 +57,27 @@ public class UserService {
 
     @Transactional
     public void registerUser(RegisterRequestDTO request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("El correo electrónico ya está en uso.");
-        }
-
-        User newUser = new User();
-        newUser.setEmail(request.getEmail());
-
-        String encryptedPassword = passwordEncoder.encode(request.getPassword());
-        newUser.setPassword(encryptedPassword);
-
-        newUser.setRole(request.getRole() != null ? request.getRole() : "visitante");
-        newUser.setCreationDate(new Date());
-        newUser.setLogDate(null);
-        newUser.setUserProfile(null);
-
-        userRepository.save(newUser);
+    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        throw new IllegalArgumentException("El correo electrónico ya está en uso.");
     }
 
+    UserProfile profile = new UserProfile();
+    profile.setName(request.getName());
+    profile.setLastName(request.getLastName());
+    profile.setCellphone(request.getCellphone());
+    profile.setCountry(request.getCountry());
+    userProfileRepository.save(profile);
+
+    User newUser = new User();
+    newUser.setEmail(request.getEmail());
+    newUser.setPassword(passwordEncoder.encode(request.getPassword())); 
+    newUser.setRole(request.getRole() != null ? request.getRole() : "visitante");
+    newUser.setCreationDate(new Date());
+    newUser.setLogDate(null);
+    newUser.setUserProfile(profile); 
+
+    userRepository.save(newUser);
+}
 
     // -------------------------------- Restablecer contraseña -------------------------------------------
     @Transactional
