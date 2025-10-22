@@ -7,6 +7,6 @@ import mx.edu.uteq.backend.model.Property;
 
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long> {
-    Optional<Property> findByNombre(String nombre);
+    Optional<Property> findByName(String name);
     Optional<Property> findById(Long id);
 }
