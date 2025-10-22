@@ -10,7 +10,9 @@ import mx.edu.uteq.backend.model.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityNotFoundException;
 import mx.edu.uteq.backend.repository.PropertyRepository;
 import mx.edu.uteq.backend.repository.UserRepository;
 
@@ -47,15 +49,16 @@ public class PropertyService {
         dto.setNumberOfGuests(property.getNumberOfGuests());
         dto.setShowProperty(property.getShowProperty());
         dto.setDescription(property.getDescription());
+        dto.setImagen(property.getImagen());
         return dto;
     }
 
     private Property convertoToEntity(PropertyDTO dto){
         Property property = new Property();
         property.setId(dto.getId());
-        if(dto.getOwnerId() != null){
-            Optional<User> owner = userRepository.findById(dto.getOwnerId());
-            owner.ifPresent(property::setOwnerId);
+        if (dto.getOwnerId() != null) {
+            userRepository.findById(dto.getOwnerId())
+            .ifPresent(property::setOwnerId);
         }
         property.setName(dto.getName());
         property.setPricePerNight(dto.getPricePerNight());
@@ -66,6 +69,45 @@ public class PropertyService {
         property.setNumberOfGuests(dto.getNumberOfGuests());
         property.setShowProperty(dto.getShowProperty());
         property.setDescription(dto.getDescription());
+        property.setImagen(dto.getImagen());
         return property;
+    }
+
+    @Transactional
+    public void registerProperty(PropertyDTO dto){
+        propertyRepository.save(convertoToEntity(dto));
+    }
+
+    @Transactional
+    public void deleteProperty(Long id){
+        Property property = propertyRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Propiedad no encontrada con el ID: " + id));
+        propertyRepository.delete(property);
+    }
+
+    @Transactional
+    public PropertyDTO updateProperty(Long id, PropertyDTO dto){
+        Property property = propertyRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Propiedad no encontrada con ID: " + id));
+        
+        property.setName(dto.getName());
+        property.setPricePerNight(dto.getPricePerNight());
+        property.setLocation(dto.getLocation());
+        property.setType(dto.getType());
+        property.setKidsAllowed(dto.getKidsAllowed());
+        property.setPetsAllowed(dto.getPetsAllowed());
+        property.setNumberOfGuests(dto.getNumberOfGuests());
+        property.setShowProperty(dto.getShowProperty());
+        property.setDescription(dto.getDescription());
+        property.setImagen(dto.getImagen());
+
+        if (dto.getOwnerId() != null) {
+            userRepository.findById(dto.getOwnerId())
+            .ifPresent(property::setOwnerId);
+        }
+
+        Property updatedProperty = propertyRepository.save(property);
+
+        return convertToDto(updatedProperty);
     }
 }

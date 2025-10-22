@@ -1,5 +1,6 @@
 package mx.edu.uteq.backend.dto;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
@@ -19,4 +20,5 @@ public class PropertyDTO {
     private Integer numberOfGuests;
     private Boolean showProperty;
     private Map<String, Object> description;
+    private List<String> imagen;
 }
