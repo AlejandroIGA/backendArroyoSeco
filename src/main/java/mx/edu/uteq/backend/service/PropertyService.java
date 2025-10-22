@@ -47,6 +47,7 @@ public class PropertyService {
         dto.setNumberOfGuests(property.getNumberOfGuests());
         dto.setShowProperty(property.getShowProperty());
         dto.setDescription(property.getDescription());
+        dto.setImagen(property.getImagen());
         return dto;
     }
 
@@ -66,6 +67,7 @@ public class PropertyService {
         property.setNumberOfGuests(dto.getNumberOfGuests());
         property.setShowProperty(dto.getShowProperty());
         property.setDescription(dto.getDescription());
+        property.setImagen(dto.getImagen());
         return property;
     }
 }
