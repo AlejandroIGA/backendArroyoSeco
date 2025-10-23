@@ -40,7 +40,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings); 
     }
 
-    // UPDATE
+    // UPDATE solo cambia el estado
     @PutMapping("/{id}")
     public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id, @RequestBody BookingRequestDTO requestDTO) {
         BookingResponseDTO updatedBooking = bookingService.updateBooking(id, requestDTO);

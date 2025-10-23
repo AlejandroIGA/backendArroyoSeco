@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import mx.edu.uteq.backend.dto.BookingRequestDTO;
 import mx.edu.uteq.backend.dto.BookingResponseDTO;
+import mx.edu.uteq.backend.dto.UserDTO;
 import mx.edu.uteq.backend.model.Booking;
 import mx.edu.uteq.backend.model.Property;
 import mx.edu.uteq.backend.model.User;
@@ -34,14 +35,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO requestDTO) {
         // 1. Buscar las entidades relacionadas
-    Property property = propertyRepository.findById(requestDTO.getPropertyId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found with id: " + requestDTO.getPropertyId()));
+        Property property = propertyRepository.findById(requestDTO.getPropertyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Property not found with id: " + requestDTO.getPropertyId()));
 
-    User user = userRepository.findById(requestDTO.getUserId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + requestDTO.getUserId()));
+        User user = userRepository.findById(requestDTO.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with id: " + requestDTO.getUserId()));
 
-        // 2. Lógica de negocio (Ej: validar que las fechas no se solapen)
-        // ... (Tu lógica aquí) ...
 
         // 3. Crear la entidad Booking
         Booking booking = new Booking();
@@ -74,26 +75,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDTO updateBooking(Long id, BookingRequestDTO requestDTO) {
-        // 1. Encontrar el booking existente
+
         Booking existingBooking = findBookingById(id);
 
-        // 2. (Opcional) Buscar las relaciones si pueden cambiar
-    Property property = propertyRepository.findById(requestDTO.getPropertyId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
-    User user = userRepository.findById(requestDTO.getUserId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        // 3. Actualizar los campos
         existingBooking.setStatus(requestDTO.getStatus());
-        existingBooking.setStartDate(requestDTO.getStartDate());
-        existingBooking.setEndDate(requestDTO.getEndDate());
-        existingBooking.setProperty(property);
-        existingBooking.setUser(user);
 
-        // 4. Guardar
         Booking updatedBooking = bookingRepository.save(existingBooking);
 
-        // 5. Devolver DTO
         return convertToResponseDTO(updatedBooking);
     }
 
@@ -103,10 +91,8 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.delete(booking);
     }
 
-
     // ----- MÉTODOS PRIVADOS DE AYUDA -----
 
-    // Mapeo manual de Entidad a DTO de Respuesta
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
         BookingResponseDTO dto = new BookingResponseDTO();
         dto.setId(booking.getId());
@@ -114,14 +100,21 @@ public class BookingServiceImpl implements BookingService {
         dto.setStartDate(booking.getStartDate());
         dto.setEndDate(booking.getEndDate());
         dto.setPropertyId(booking.getProperty().getId());
-        dto.setUserId(booking.getUser().getId());
-        // Si usaras DTOs anidados, los mapearías aquí
+        if (booking.getUser() != null) {
+            UserDTO uDto = new UserDTO();
+            uDto.setId(booking.getUser().getId());
+            uDto.setEmail(booking.getUser().getEmail());
+            uDto.setRole(booking.getUser().getRole());
+            dto.setUser(uDto);
+        }
+
         return dto;
     }
 
     // Método reutilizable para encontrar o fallar
     private Booking findBookingById(Long id) {
-    return bookingRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found with id: " + id));
+        return bookingRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found with id: " + id));
     }
 }
