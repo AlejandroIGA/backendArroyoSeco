@@ -2,6 +2,9 @@ package mx.edu.uteq.backend.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -91,6 +94,52 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.delete(booking);
     }
 
+    @Override
+    public List<BookingResponseDTO> searchBookings(String startDateStr, String endDateStr, Long propertyId, String status, Long userId) {
+        Date startDate = null;
+        Date endDate = null;
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            if (startDateStr != null && !startDateStr.isBlank()) {
+                startDate = fmt.parse(startDateStr);
+            }
+            if (endDateStr != null && !endDateStr.isBlank()) {
+                endDate = fmt.parse(endDateStr);
+            }
+        } catch (ParseException e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Invalid date format. Use yyyy-MM-dd");
+        }
+
+        final Date s = startDate;
+        final Date e = endDate;
+
+        return bookingRepository.findAll()
+                .stream()
+                .filter(b -> {
+                    // startDate filter: booking.startDate >= s
+                    if (s != null) {
+                        if (b.getStartDate() == null || b.getStartDate().before(s)) return false;
+                    }
+                    // endDate filter: booking.endDate <= e
+                    if (e != null) {
+                        if (b.getEndDate() == null || b.getEndDate().after(e)) return false;
+                    }
+                    if (propertyId != null) {
+                        if (b.getProperty() == null || !propertyId.equals(b.getProperty().getId())) return false;
+                    }
+                    if (status != null && !status.isBlank()) {
+                        if (b.getStatus() == null || !status.equalsIgnoreCase(b.getStatus())) return false;
+                    }
+                    if (userId != null) {
+                        if (b.getUser() == null || !userId.equals(b.getUser().getId())) return false;
+                    }
+                    return true;
+                })
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // ----- MÉTODOS PRIVADOS DE AYUDA -----
 
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
@@ -100,6 +149,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setStartDate(booking.getStartDate());
         dto.setEndDate(booking.getEndDate());
         dto.setPropertyId(booking.getProperty().getId());
+        
         if (booking.getUser() != null) {
             UserDTO uDto = new UserDTO();
             uDto.setId(booking.getUser().getId());
