@@ -2,6 +2,9 @@ package mx.edu.uteq.backend.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import mx.edu.uteq.backend.dto.BookingRequestDTO;
 import mx.edu.uteq.backend.dto.BookingResponseDTO;
+import mx.edu.uteq.backend.dto.UserDTO;
 import mx.edu.uteq.backend.model.Booking;
 import mx.edu.uteq.backend.model.Property;
 import mx.edu.uteq.backend.model.User;
@@ -34,14 +38,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO requestDTO) {
         // 1. Buscar las entidades relacionadas
-    Property property = propertyRepository.findById(requestDTO.getPropertyId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found with id: " + requestDTO.getPropertyId()));
+        Property property = propertyRepository.findById(requestDTO.getPropertyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Property not found with id: " + requestDTO.getPropertyId()));
 
-    User user = userRepository.findById(requestDTO.getUserId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with id: " + requestDTO.getUserId()));
+        User user = userRepository.findById(requestDTO.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found with id: " + requestDTO.getUserId()));
 
-        // 2. Lógica de negocio (Ej: validar que las fechas no se solapen)
-        // ... (Tu lógica aquí) ...
 
         // 3. Crear la entidad Booking
         Booking booking = new Booking();
@@ -74,26 +78,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDTO updateBooking(Long id, BookingRequestDTO requestDTO) {
-        // 1. Encontrar el booking existente
+
         Booking existingBooking = findBookingById(id);
 
-        // 2. (Opcional) Buscar las relaciones si pueden cambiar
-    Property property = propertyRepository.findById(requestDTO.getPropertyId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Property not found"));
-    User user = userRepository.findById(requestDTO.getUserId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        // 3. Actualizar los campos
         existingBooking.setStatus(requestDTO.getStatus());
-        existingBooking.setStartDate(requestDTO.getStartDate());
-        existingBooking.setEndDate(requestDTO.getEndDate());
-        existingBooking.setProperty(property);
-        existingBooking.setUser(user);
 
-        // 4. Guardar
         Booking updatedBooking = bookingRepository.save(existingBooking);
 
-        // 5. Devolver DTO
         return convertToResponseDTO(updatedBooking);
     }
 
@@ -103,10 +94,54 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.delete(booking);
     }
 
+    @Override
+    public List<BookingResponseDTO> searchBookings(String startDateStr, String endDateStr, Long propertyId, String status, Long userId) {
+        Date startDate = null;
+        Date endDate = null;
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            if (startDateStr != null && !startDateStr.isBlank()) {
+                startDate = fmt.parse(startDateStr);
+            }
+            if (endDateStr != null && !endDateStr.isBlank()) {
+                endDate = fmt.parse(endDateStr);
+            }
+        } catch (ParseException e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Invalid date format. Use yyyy-MM-dd");
+        }
+
+        final Date s = startDate;
+        final Date e = endDate;
+
+        return bookingRepository.findAll()
+                .stream()
+                .filter(b -> {
+                    // startDate filter: booking.startDate >= s
+                    if (s != null) {
+                        if (b.getStartDate() == null || b.getStartDate().before(s)) return false;
+                    }
+                    // endDate filter: booking.endDate <= e
+                    if (e != null) {
+                        if (b.getEndDate() == null || b.getEndDate().after(e)) return false;
+                    }
+                    if (propertyId != null) {
+                        if (b.getProperty() == null || !propertyId.equals(b.getProperty().getId())) return false;
+                    }
+                    if (status != null && !status.isBlank()) {
+                        if (b.getStatus() == null || !status.equalsIgnoreCase(b.getStatus())) return false;
+                    }
+                    if (userId != null) {
+                        if (b.getUser() == null || !userId.equals(b.getUser().getId())) return false;
+                    }
+                    return true;
+                })
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
 
     // ----- MÉTODOS PRIVADOS DE AYUDA -----
 
-    // Mapeo manual de Entidad a DTO de Respuesta
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
         BookingResponseDTO dto = new BookingResponseDTO();
         dto.setId(booking.getId());
@@ -114,14 +149,22 @@ public class BookingServiceImpl implements BookingService {
         dto.setStartDate(booking.getStartDate());
         dto.setEndDate(booking.getEndDate());
         dto.setPropertyId(booking.getProperty().getId());
-        dto.setUserId(booking.getUser().getId());
-        // Si usaras DTOs anidados, los mapearías aquí
+        
+        if (booking.getUser() != null) {
+            UserDTO uDto = new UserDTO();
+            uDto.setId(booking.getUser().getId());
+            uDto.setEmail(booking.getUser().getEmail());
+            uDto.setRole(booking.getUser().getRole());
+            dto.setUser(uDto);
+        }
+
         return dto;
     }
 
     // Método reutilizable para encontrar o fallar
     private Booking findBookingById(Long id) {
-    return bookingRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found with id: " + id));
+        return bookingRepository.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found with id: " + id));
     }
 }

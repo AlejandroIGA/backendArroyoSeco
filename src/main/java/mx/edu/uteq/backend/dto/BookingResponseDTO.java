@@ -8,7 +8,7 @@ public class BookingResponseDTO {
     private Date startDate;
     private Date endDate;
     private Long propertyId;
-    private Long userId;
+    private UserDTO user;
     //private PaymentDTO payment;
 
     // Getters y Setters
@@ -42,11 +42,11 @@ public class BookingResponseDTO {
     public void setPropertyId(Long propertyId) {
         this.propertyId = propertyId;
     }
-    public Long getUserId() {
-        return userId;
+    public UserDTO getUser() {
+        return user;
     }
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
     // public PaymentDTO getPayment() {
     //     return payment;

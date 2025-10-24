@@ -19,6 +19,20 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
+    //GET avanzado busqueda por fechas, propiedad, estatus y usuario
+    //requiere los parametros, startDate, endDate, propertyId, status, userId opcionales
+    //si no existe ningun parametro, devuelve todos los bookings
+    @GetMapping("/search")
+    public ResponseEntity<List<BookingResponseDTO>> searchBookings(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Long propertyId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long userId) {
+        List<BookingResponseDTO> bookings = bookingService.searchBookings(startDate, endDate, propertyId, status, userId);
+        return ResponseEntity.ok(bookings);
+    }
+
     // CREATE
     @PostMapping
     public ResponseEntity<BookingResponseDTO> createBooking(@RequestBody BookingRequestDTO requestDTO) {
@@ -40,7 +54,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings); 
     }
 
-    // UPDATE
+    // UPDATE solo cambia el estado
     @PutMapping("/{id}")
     public ResponseEntity<BookingResponseDTO> updateBooking(@PathVariable Long id, @RequestBody BookingRequestDTO requestDTO) {
         BookingResponseDTO updatedBooking = bookingService.updateBooking(id, requestDTO);

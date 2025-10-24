@@ -15,4 +15,8 @@ public interface BookingService {
     BookingResponseDTO updateBooking(Long id, BookingRequestDTO requestDTO);
 
     void deleteBooking(Long id);
+
+    // Búsqueda avanzada por fechas (yyyy-MM-dd), propiedad, estado y usuario
+    List<BookingResponseDTO> searchBookings(String startDate, String endDate, Long propertyId, String status, Long userId);
+
 }
