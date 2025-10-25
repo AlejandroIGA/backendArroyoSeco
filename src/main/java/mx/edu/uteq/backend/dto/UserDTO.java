@@ -1,9 +1,12 @@
 package mx.edu.uteq.backend.dto;
 
+import mx.edu.uteq.backend.model.UserProfile;
+
 public class UserDTO {
     private Long id;
     private String email;
     private String role;
+    private UserProfile userProfile;
 
     public Long getId() {
         return id;
@@ -27,5 +30,13 @@ public class UserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    public UserProfile getUserProfile() {
+        return userProfile;
     }
 }
