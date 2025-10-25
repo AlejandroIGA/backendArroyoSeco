@@ -14,6 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import mx.edu.uteq.backend.repository.PropertyRepository;
 import mx.edu.uteq.backend.repository.UserRepository;
+import mx.edu.uteq.backend.repository.BookingRepository;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 @Service
 public class PropertyService {
@@ -24,10 +29,56 @@ public class PropertyService {
     @Autowired 
     private UserRepository userRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
     public List<PropertyDTO> getProperties() {
         return propertyRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Busca propiedades aplicando filtros sencillos por características. Si se proporcionan
+     * startDate y endDate, para cada propiedad se evalúa si existe alguna
+     * reserva que solape con ese período y se marca el campo 'available' en el DTO.
+     */
+    public List<PropertyDTO> searchProperties(String type, Boolean kidsAllowed, Boolean petsAllowed,
+            Integer numberOfGuests, Double maxPrice, String startDateStr, String endDateStr) {
+
+        Date startDate = null;
+        Date endDate = null;
+        if (startDateStr != null && endDateStr != null) {
+            try {
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                startDate = fmt.parse(startDateStr);
+                endDate = fmt.parse(endDateStr);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Fechas deben estar en formato yyyy-MM-dd");
+            }
+        }
+        final Date fStart = startDate;
+        final Date fEnd = endDate;
+
+        return propertyRepository.findAll().stream()
+                .filter(p -> type == null || (p.getType() != null && p.getType().equalsIgnoreCase(type)))
+                .filter(p -> kidsAllowed == null || (p.getKidsAllowed() != null && p.getKidsAllowed().equals(kidsAllowed)))
+                .filter(p -> petsAllowed == null || (p.getPetsAllowed() != null && p.getPetsAllowed().equals(petsAllowed)))
+                .filter(p -> numberOfGuests == null || (p.getNumberOfGuests() != null && p.getNumberOfGuests() >= numberOfGuests))
+                .filter(p -> maxPrice == null || (p.getPricePerNight() != null && p.getPricePerNight() <= maxPrice))
+                .map(p -> {
+                    PropertyDTO dto = convertToDto(p);
+                    if (fStart != null && fEnd != null) {
+                        boolean hasOverlap = bookingRepository
+                                .existsByPropertyIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(p.getId(), fEnd,
+                                        fStart);
+                        dto.setAvailable(!hasOverlap);
+                    } else {
+                        dto.setAvailable(null); // disponibilidad no consultada
+                    }
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Optional<PropertyDTO> getPropertyById(Long id){
