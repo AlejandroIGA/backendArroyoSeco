@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import mx.edu.uteq.backend.dto.PropertyDTO;
 import mx.edu.uteq.backend.service.PropertyService;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -74,6 +75,26 @@ public class PropertyController {
         }catch(Exception e){
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al intentar actualizar propiedad");
+        }
+    }
+
+    // Búsqueda avanzada por características y verificación de disponibilidad
+    @GetMapping("/search")
+    public ResponseEntity<List<PropertyDTO>> searchProperties(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Boolean kidsAllowed,
+            @RequestParam(required = false) Boolean petsAllowed,
+            @RequestParam(required = false) Integer numberOfGuests,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        try {
+            List<PropertyDTO> results = propertyService.searchProperties(type, kidsAllowed, petsAllowed,
+                    numberOfGuests, maxPrice, startDate, endDate);
+            return ResponseEntity.ok(results);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

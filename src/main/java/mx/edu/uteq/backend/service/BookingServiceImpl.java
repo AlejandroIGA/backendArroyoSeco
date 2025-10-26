@@ -156,7 +156,9 @@ public class BookingServiceImpl implements BookingService {
             uDto.setEmail(booking.getUser().getEmail());
             uDto.setRole(booking.getUser().getRole());
             dto.setUser(uDto);
+            uDto.setUserProfile(booking.getUser().getUserProfile());
         }
+        
 
         return dto;
     }
