@@ -41,9 +41,12 @@ public class Property{
     private Map<String, Object> location;
 
     private String type;
+    @Column(columnDefinition = "TINYINT(1)")
     private Boolean kidsAllowed;
+    @Column(columnDefinition = "TINYINT(1)")
     private Boolean petsAllowed;
     private Integer numberOfGuests;
+    @Column(columnDefinition = "TINYINT(1)")
     private Boolean showProperty;
 
     @ElementCollection
