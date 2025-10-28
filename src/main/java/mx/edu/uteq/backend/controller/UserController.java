@@ -9,11 +9,12 @@ import mx.edu.uteq.backend.model.User;
 import mx.edu.uteq.backend.dto.RegisterRequestDTO;
 import mx.edu.uteq.backend.service.UserService;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:4173")
 public class UserController {
 
     private final UserService userService;
@@ -24,14 +25,21 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        try {
-            User loggedUser = userService.loginUser(user.getEmail(), user.getPassword());
-            return ResponseEntity.ok("Bienvenido, tu rol es: " + loggedUser.getRole());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+public ResponseEntity<?> login(@RequestBody User user) {
+    try {
+        User loggedUser = userService.loginUser(user.getEmail(), user.getPassword());
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Bienvenido");
+        response.put("id", loggedUser.getId());
+        response.put("rol", loggedUser.getRole());
+
+        return ResponseEntity.ok(response);
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", e.getMessage()));
     }
+}
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {
