@@ -13,7 +13,6 @@ import mx.edu.uteq.backend.service.BookingService;
 
 @RestController
 @RequestMapping("/api/bookings") // Ruta base para todas las operaciones de bookings
-@CrossOrigin(origins = "http://localhost:5173")
 public class BookingController {
 
     @Autowired
