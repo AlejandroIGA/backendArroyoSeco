@@ -160,4 +160,10 @@ public class PropertyService {
 
         return convertToDto(updatedProperty);
     }
+
+    public List<PropertyDTO> getPropertiesByOwner(Long ownerId){
+        return propertyRepository.findByOwnerId(ownerId).stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
+    }
 }
