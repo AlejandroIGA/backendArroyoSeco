@@ -98,7 +98,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDTO> searchBookings(String startDateStr, String endDateStr, Long propertyId, String status, Long userId) {
         Date startDate = null;
         Date endDate = null;
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yyyy");
         try {
             if (startDateStr != null && !startDateStr.isBlank()) {
                 startDate = fmt.parse(startDateStr);
@@ -108,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
             }
         } catch (ParseException e) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,
-                    "Invalid date format. Use yyyy-MM-dd");
+                    "Invalid date format. Use dd-MM-yyyy");
         }
 
         final Date s = startDate;

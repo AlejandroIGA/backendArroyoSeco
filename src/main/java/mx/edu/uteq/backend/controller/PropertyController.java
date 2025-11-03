@@ -3,11 +3,13 @@ package mx.edu.uteq.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomBooleanEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,11 @@ public class PropertyController {
     
     @Autowired
     private PropertyService propertyService;
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder){
+        binder.registerCustomEditor(Boolean.class, new CustomBooleanEditor(true));
+    }
 
     @GetMapping
     public List<PropertyDTO> getProperties() {
@@ -98,4 +105,18 @@ public class PropertyController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @GetMapping("/user/{ownerId}")
+    public ResponseEntity<List<PropertyDTO>> getPropertyByOwnerId(@PathVariable Long ownerId) {
+        try{
+            List<PropertyDTO> properties = propertyService.getPropertiesByOwner(ownerId);
+            if(properties.isEmpty()){
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(properties);
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
 }

@@ -50,11 +50,11 @@ public class PropertyService {
         Date endDate = null;
         if (startDateStr != null && endDateStr != null) {
             try {
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
                 startDate = fmt.parse(startDateStr);
                 endDate = fmt.parse(endDateStr);
             } catch (ParseException e) {
-                throw new IllegalArgumentException("Fechas deben estar en formato yyyy-MM-dd");
+                throw new IllegalArgumentException("Fechas deben estar en formato dd-MM-yyyy");
             }
         }
         final Date fStart = startDate;
@@ -159,5 +159,11 @@ public class PropertyService {
         Property updatedProperty = propertyRepository.save(property);
 
         return convertToDto(updatedProperty);
+    }
+
+    public List<PropertyDTO> getPropertiesByOwner(Long ownerId){
+        return propertyRepository.findByOwnerId_Id(ownerId).stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
     }
 }
