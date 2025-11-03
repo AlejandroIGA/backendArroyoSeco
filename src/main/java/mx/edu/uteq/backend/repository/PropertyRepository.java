@@ -11,5 +11,5 @@ import java.util.List;
 public interface PropertyRepository extends JpaRepository<Property, Long> {
     Optional<Property> findByName(String name);
     Optional<Property> findById(Long id);
-    List<Property> findByOwnerId(Long ownerId);
+    List<Property> findByOwnerId_Id(Long ownerId);
 }

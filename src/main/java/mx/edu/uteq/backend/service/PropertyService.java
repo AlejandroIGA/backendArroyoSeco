@@ -162,7 +162,7 @@ public class PropertyService {
     }
 
     public List<PropertyDTO> getPropertiesByOwner(Long ownerId){
-        return propertyRepository.findByOwnerId(ownerId).stream()
+        return propertyRepository.findByOwnerId_Id(ownerId).stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
