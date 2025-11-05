@@ -4,7 +4,6 @@ import mx.edu.uteq.backend.service.JwtService;
 import mx.edu.uteq.backend.service.UserProfileService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import mx.edu.uteq.backend.model.UserProfile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +35,7 @@ public class UserProfileController {
         UserProfile newProfile = userProfileService.createProfileForUser(userId, profileDetails);
         return new ResponseEntity<>(newProfile, HttpStatus.CREATED);
     }
+    
     /*read
     @GetMapping("/{userId}/profile")
     public ResponseEntity<UserProfile> getUserProfile(@PathVariable Long userId) {
@@ -43,6 +43,7 @@ public class UserProfileController {
         return ResponseEntity.ok(profile);
     }
         */
+
     //update
     @PutMapping("/{userId}/profile")
     public ResponseEntity<UserProfile> updateUserProfile(@PathVariable Long userId, @RequestBody UserProfile profileDetails) {

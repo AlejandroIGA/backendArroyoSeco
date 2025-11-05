@@ -15,30 +15,47 @@ public class UserProfile implements Serializable {
 
     @Column(name = "last_name")
     private String lastName;
-    
     private String cellphone;
     private String country;
 
-    // Relación bidireccional opcional con User
-    @OneToOne(mappedBy = "userProfile")
-    private User user;
+    //getters and setters
+    public Long getId() {
+        return id;
+    }
 
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getCellphone() { return cellphone; }
-    public void setCellphone(String cellphone) { this.cellphone = cellphone; }
+    public String getLastName() {
+        return lastName;
+    }
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public String getCellphone() {
+        return cellphone;
+    }
+
+    public void setCellphone(String cellphone) {
+        this.cellphone = cellphone;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 }
