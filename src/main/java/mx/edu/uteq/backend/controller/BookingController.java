@@ -90,14 +90,11 @@ public class BookingController {
         return ResponseEntity.ok("Borrado correctamente");
     }
 
-    // Nuevo endpoint: obtener todas las reservaciones del usuario autenticado (sin filtros)
+    // Nuevo endpoint: obtener todas las reservaciones del usuario autenticado
     @GetMapping("/me")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings() {
         Long currentUserId = jwtService.getCurrentUserId();
-        List<BookingResponseDTO> bookings = bookingService.getAllBookings()
-            .stream()
-            .filter(b -> currentUserId != null && currentUserId.equals(b.getId()))
-            .collect(Collectors.toList());
+        List<BookingResponseDTO> bookings = bookingService.searchBookings(null, null, null, null, currentUserId);
         return ResponseEntity.ok(bookings);
     }
 }
