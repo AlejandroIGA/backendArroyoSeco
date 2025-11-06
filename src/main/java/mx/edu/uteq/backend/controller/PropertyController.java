@@ -1,6 +1,7 @@
 package mx.edu.uteq.backend.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomBooleanEditor;
@@ -44,10 +45,27 @@ public class PropertyController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id) {
-        return propertyService.getPropertyById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Long currentUserId = jwtService.getCurrentUserId();
+            Optional<PropertyDTO> opt = propertyService.getPropertyById(id);
 
+            if (opt == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            boolean isOwner = false;
+            PropertyDTO property = opt.get();
+
+            if (property.getOwnerId() != null && currentUserId.equals(property.getOwnerId())) {
+                isOwner = true;
+            }
+
+            property.setOwner(isOwner);
+
+            return ResponseEntity.ok(property);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/register")

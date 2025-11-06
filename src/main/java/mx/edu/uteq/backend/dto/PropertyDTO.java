@@ -21,6 +21,6 @@ public class PropertyDTO {
     private Boolean showProperty;
     private Map<String, Object> description;
     private List<String> imagen;
-
     private Boolean available;
+    private boolean isOwner;
 }
