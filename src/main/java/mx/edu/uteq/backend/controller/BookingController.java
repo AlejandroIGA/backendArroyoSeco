@@ -55,6 +55,8 @@ public class BookingController {
     // CREATE
     @PostMapping
     public ResponseEntity<BookingResponseDTO> createBooking(@RequestBody BookingRequestDTO requestDTO) {
+        // asignar userId desde el JWT antes de crear la reserva
+        requestDTO.setUserId(jwtService.getCurrentUserId());
         BookingResponseDTO newBooking = bookingService.createBooking(requestDTO);
         return new ResponseEntity<>(newBooking, HttpStatus.CREATED); 
     }
