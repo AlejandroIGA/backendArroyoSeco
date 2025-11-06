@@ -47,15 +47,13 @@ public class SecurityFilterChainConfig {
         http
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable) 
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
             
             .authorizeHttpRequests(authorize -> authorize
                 // Endpoints públicos de autenticación
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/exchange-code").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
                 
                 // APIs protegidas por roles - requieren JWT
                 .requestMatchers("/api/properties/**").hasAuthority("ANFITRION") 
