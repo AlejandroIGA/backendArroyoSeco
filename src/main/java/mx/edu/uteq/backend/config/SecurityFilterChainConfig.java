@@ -72,8 +72,14 @@ public class SecurityFilterChainConfig {
             )
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            );
-            
+            )
+            .logout(logout -> logout
+            .logoutUrl("/api/auth/logout") 
+            .logoutSuccessUrl("https://alojando.duckdns.org/login") 
+            .invalidateHttpSession(true) 
+            .deleteCookies("JSESSIONID")
+            .permitAll()
+        );
         return http.build();
     }
 
