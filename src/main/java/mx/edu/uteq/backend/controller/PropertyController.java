@@ -17,20 +17,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import mx.edu.uteq.backend.dto.PropertyDTO;
+import mx.edu.uteq.backend.service.JwtService;
 import mx.edu.uteq.backend.service.PropertyService;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @RestController
 @RequestMapping("/api/properties")
 public class PropertyController {
-    
+
     @Autowired
     private PropertyService propertyService;
 
+    @Autowired
+    private JwtService jwtService;
+
     @InitBinder
-    public void initBinder(WebDataBinder binder){
+    public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(Boolean.class, new CustomBooleanEditor(true));
     }
 
@@ -40,34 +43,42 @@ public class PropertyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id){
+    public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id) {
         return propertyService.getPropertyById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
 
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerProperty(@RequestBody PropertyDTO propertyRegister){
-        try{
+    public ResponseEntity<String> registerProperty(@RequestBody PropertyDTO propertyRegister) {
+        try {
+            Long ownerId = jwtService.getCurrentUserId();
+
+            propertyRegister.setOwnerId(ownerId);
+
             propertyService.registerProperty(propertyRegister);
             return ResponseEntity.status(HttpStatus.CREATED).body("Propiedad registrada con exito");
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }catch(Exception e){
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("No se pudo obtener el usuario autenticado" + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al intentar registrar propiedad");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al intentar registrar propiedad");
         }
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteProperty(@PathVariable Long id){
-        try{
+    public ResponseEntity<String> deleteProperty(@PathVariable Long id) {
+        try {
             propertyService.deleteProperty(id);
             return ResponseEntity.ok("Propiedad eliminada con exito");
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al intentar eliminar propiedad");
         }
@@ -75,14 +86,15 @@ public class PropertyController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateProperty(@PathVariable Long id, @RequestBody PropertyDTO dto) {
-        try{
+        try {
             PropertyDTO updatedProperty = propertyService.updateProperty(id, dto);
             return ResponseEntity.ok(updatedProperty);
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al intentar actualizar propiedad");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al intentar actualizar propiedad");
         }
     }
 
@@ -106,17 +118,22 @@ public class PropertyController {
         }
     }
 
-    @GetMapping("/user/{ownerId}")
-    public ResponseEntity<List<PropertyDTO>> getPropertyByOwnerId(@PathVariable Long ownerId) {
-        try{
+    @GetMapping("/user/myproperties")
+    public ResponseEntity<List<PropertyDTO>> getPropertyByOwnerId() {
+        try {
+
+            Long ownerId = jwtService.getCurrentUserId();
+
             List<PropertyDTO> properties = propertyService.getPropertiesByOwner(ownerId);
-            if(properties.isEmpty()){
+            if (properties.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
             return ResponseEntity.ok(properties);
-        }catch(Exception e){
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
 }
