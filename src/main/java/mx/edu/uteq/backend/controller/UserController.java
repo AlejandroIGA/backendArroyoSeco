@@ -4,12 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import mx.edu.uteq.backend.model.User;
 import mx.edu.uteq.backend.dto.RegisterRequestDTO;
 import mx.edu.uteq.backend.service.UserService;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -23,7 +20,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/login")
+   /*  @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody User user) {
     try {
         User loggedUser = userService.loginUser(user.getEmail(), user.getPassword());
@@ -38,7 +35,7 @@ public ResponseEntity<?> login(@RequestBody User user) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", e.getMessage()));
     }
-}
+} */
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequest) {

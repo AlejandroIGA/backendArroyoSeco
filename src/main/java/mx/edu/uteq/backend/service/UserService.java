@@ -39,7 +39,7 @@ public class UserService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public User loginUser(String email, String password) {
+    /* public User loginUser(String email, String password) {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
@@ -53,7 +53,7 @@ public class UserService {
         }
 
         return user;
-    }
+    } */
 
     @Transactional
     public void registerUser(RegisterRequestDTO request) {
