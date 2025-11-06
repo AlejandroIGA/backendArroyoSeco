@@ -56,9 +56,9 @@ public class SecurityFilterChainConfig {
                 .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
                 
                 // APIs protegidas por roles - requieren JWT
-                .requestMatchers("/api/properties/**").hasAuthority("ANFITRION") 
+                .requestMatchers("/api/properties/**").hasAuthority("PROPIETARIO") 
                 .requestMatchers("/api/bookings/**").hasAuthority("VISITANTE") 
-                .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "ANFITRION")
+                .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "PROPIETARIO")
                 
                 // Permite acceso al /error para debugging
                 .requestMatchers("/error").permitAll()
