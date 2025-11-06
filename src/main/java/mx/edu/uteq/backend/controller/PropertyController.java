@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomBooleanEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,20 +46,24 @@ public class PropertyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id) {
+    public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id, Authentication authentication) {
         try {
-            Long currentUserId = jwtService.getCurrentUserId();
             Optional<PropertyDTO> opt = propertyService.getPropertyById(id);
 
-            if (opt == null) {
+            if (opt.isEmpty()) { 
                 return ResponseEntity.notFound().build();
             }
 
-            boolean isOwner = false;
             PropertyDTO property = opt.get();
+            boolean isOwner = false;
+            if (authentication != null && authentication.isAuthenticated()
+                    && !(authentication instanceof AnonymousAuthenticationToken)) {
 
-            if (property.getOwnerId() != null && currentUserId.equals(property.getOwnerId())) {
-                isOwner = true;
+                Long currentUserId = jwtService.getCurrentUserId();
+
+                if (property.getOwnerId() != null && currentUserId.equals(property.getOwnerId())) {
+                    isOwner = true;
+                }
             }
 
             property.setOwner(isOwner);
