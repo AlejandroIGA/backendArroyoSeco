@@ -3,6 +3,8 @@ package mx.edu.uteq.backend.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import mx.edu.uteq.backend.dto.LoginRequest;
+
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +21,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException; 
-
+import org.slf4j.Logger;                // <-- AÑADIR
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class); // <-- AÑADIR
 
     private final AuthenticationManager authenticationManager;
     private final JwtDecoder jwtDecoder; 
@@ -50,6 +54,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        logger.info("Procesando solicitud de login para: {}", loginRequest.getEmail()); // <-- AÑADIR
         try {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -57,7 +62,7 @@ public class AuthController {
                     loginRequest.getPassword()
                 )
             );
-
+            logger.info("PASO 1: Autenticación de USUARIO exitosa para: {}", authentication.getName()); // <-- AÑADIR
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
@@ -83,14 +88,14 @@ public class AuthController {
             body.add("scope", "read write"); // O los scopes que necesites
             
             HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-            
+            logger.info("PASO 2: Solicitando token de OAuth2 a [{}] para el cliente [{}]", tokenUri, clientId); // <-- AÑADIR
             ResponseEntity<Map> tokenResponse = restTemplate.exchange(
                 tokenUri,
                 HttpMethod.POST,
                 entity,
                 Map.class
             );
-
+            logger.info("PASO 2: Token OAuth2 obtenido exitosamente."); // <-- AÑADIR
             Map<String, Object> responseBody = tokenResponse.getBody();
             if (responseBody == null) {
                 throw new RuntimeException("El cuerpo de la respuesta de tokens está vacío.");
@@ -109,12 +114,24 @@ public class AuthController {
             
         } catch (AuthenticationException | HttpClientErrorException e) {
             // Captura si la autenticación falla O si el "password grant" falla
+            logger.error("FALLO EL LOGIN para {}: {}", loginRequest.getEmail(), e.getMessage()); // <-- AÑADIR
+
+            // Esta lógica nos dirá exactamente qué falló
+            if (e instanceof HttpClientErrorException) {
+                HttpClientErrorException hce = (HttpClientErrorException) e;
+                logger.error("Detalle del fallo (PASO 2 - Cliente): Status Code: {}", hce.getStatusCode());
+                // ESTE ES EL LOG MÁS IMPORTANTE:
+                logger.error("Detalle del fallo (PASO 2 - Cliente): Response Body: {}", hce.getResponseBodyAsString()); // <-- AÑADIR
+            } else if (e instanceof AuthenticationException) {
+                logger.warn("Detalle del fallo (PASO 1 - Usuario): Autenticación de usuario fallida."); // <-- AÑADIR
+            }
             Map<String, Object> error = new HashMap<>();
             error.put("authenticated", false);
             error.put("message", "Credenciales inválidas");
             
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         } catch (Exception e) {
+            logger.error("Error inesperado durante el login para {}", loginRequest.getEmail(), e); // <-- MEJORAR
             // Captura cualquier otro error (ej. RestTemplate fallando)
              Map<String, Object> error = new HashMap<>();
              error.put("message", "Error al procesar el login: " + e.getMessage());
