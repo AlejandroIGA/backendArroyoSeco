@@ -5,12 +5,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,7 +36,9 @@ public class SecurityFilterChainConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         
         http.cors(Customizer.withDefaults());
-        http.csrf(Customizer.withDefaults());
+        http.csrf(csrf -> csrf
+            .ignoringRequestMatchers("/oauth2/**") // Ignora CSRF para los endpoints de OAuth
+        );
         
         http.exceptionHandling(exceptions -> exceptions
             .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
@@ -53,6 +59,7 @@ public class SecurityFilterChainConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/exchange-code").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
                 .requestMatchers("/api/bookings/**").hasAnyAuthority("VISITANTE", "PROPIETARIO") 
                 .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "PROPIETARIO")
@@ -69,7 +76,6 @@ public class SecurityFilterChainConfig {
             )
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-
             )
             .logout(logout -> logout
             .logoutUrl("/api/auth/logout") 
@@ -78,7 +84,6 @@ public class SecurityFilterChainConfig {
             .deleteCookies("JSESSIONID")
             .permitAll()
         );
-            
         return http.build();
     }
 
