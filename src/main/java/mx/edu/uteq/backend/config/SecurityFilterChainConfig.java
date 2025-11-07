@@ -31,23 +31,27 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
-    private final AuthenticationManager authenticationManager;
-
-    // Esto es CORRECTO. @Lazy rompe el ciclo de dependencia.
-    public SecurityFilterChainConfig(@Lazy AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
     @Bean
     @Order(1) 
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
+        // --- INICIO DE LA SOLUCIÓN ---
+        
+        // 1. Obtenemos el AuthenticationManager desde el HttpSecurity context.
+        //    Esto rompe el ciclo de dependencia.
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationConfiguration.class)
+            .getAuthenticationManager();
+
+        // 2. Le decimos al endpoint de tokens que use nuestro AuthenticationManager,
+        //    haciendo el cast a AuthenticationProvider (que ahora es seguro).
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
             .tokenEndpoint(tokenEndpoint -> tokenEndpoint
-                .authenticationProvider((AuthenticationProvider) this.authenticationManager) // <-- ¡LA CONEXIÓN!
+                .authenticationProvider((AuthenticationProvider) authenticationManager) // <-- ¡LA CONEXIÓN!
             );
+        
+        // --- FIN DE LA SOLUCIÓN ---
         
         http.cors(Customizer.withDefaults());
         http.csrf(csrf -> csrf
