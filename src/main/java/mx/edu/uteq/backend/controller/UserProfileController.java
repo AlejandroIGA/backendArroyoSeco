@@ -21,7 +21,7 @@ public class UserProfileController {
     @Autowired
     private JwtService jwtService;
 
-    // Este es el que trae el perfil de id de usuario especifico
+    //read
     @GetMapping("/profile")
     public ResponseEntity<UserProfile> getCurrentUserProfile() {
         Long currentUserId = jwtService.getCurrentUserId();
@@ -29,33 +29,36 @@ public class UserProfileController {
         return ResponseEntity.ok(profile);
     }
 
-    //create
+    //update
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfile> updateUserProfile(@RequestBody UserProfile profileDetails) {
+        Long currentUserId = jwtService.getCurrentUserId();  
+        UserProfile updatedProfile = userProfileService.updateUserProfileByUserId(currentUserId, profileDetails);
+        return ResponseEntity.ok(updatedProfile);
+    }
+
+
+    /* create
     @PostMapping("/{userId}/profile")
     public ResponseEntity<UserProfile> createProfileForUser(@PathVariable Long userId, @RequestBody UserProfile profileDetails) {
         UserProfile newProfile = userProfileService.createProfileForUser(userId, profileDetails);
         return new ResponseEntity<>(newProfile, HttpStatus.CREATED);
     }
     
-    /*read
+    // read
     @GetMapping("/{userId}/profile")
     public ResponseEntity<UserProfile> getUserProfile(@PathVariable Long userId) {
         UserProfile profile = userProfileService.getUserProfileByUserId(userId);
         return ResponseEntity.ok(profile);
     }
-        */
 
-    //update
-    @PutMapping("/{userId}/profile")
-    public ResponseEntity<UserProfile> updateUserProfile(@PathVariable Long userId, @RequestBody UserProfile profileDetails) {
-        UserProfile updatedProfile = userProfileService.updateUserProfileByUserId(userId, profileDetails);
-        return ResponseEntity.ok(updatedProfile);
-    }
     //delate
     @DeleteMapping("/{userId}/profile")
     public ResponseEntity<Void> deleteUserProfile(@PathVariable Long userId) {
         userProfileService.deleteProfileByUserId(userId);
         return ResponseEntity.noContent().build();
     }
+        */
 
 }
 
