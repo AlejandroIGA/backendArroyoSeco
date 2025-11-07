@@ -52,7 +52,7 @@ public class SecurityFilterChainConfig {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
-            .csrf(AbstractHttpConfigurer::disable) 
+            .csrf(AbstractHttpConfigurer::disable)
             
             .authorizeHttpRequests(authorize -> authorize
                 // Endpoints públicos de autenticación
@@ -60,10 +60,8 @@ public class SecurityFilterChainConfig {
                 .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/exchange-code").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
-                
-                // APIs protegidas por roles - requieren JWT
-                .requestMatchers("/api/properties/**").hasAuthority("PROPIETARIO") 
-                .requestMatchers("/api/bookings/**").hasAnyAuthority("VISITANTE","PROPIETARIO") 
+
+                .requestMatchers("/api/bookings/**").hasAnyAuthority("VISITANTE", "PROPIETARIO") 
                 .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "PROPIETARIO")
                 
                 // Permite acceso al /error para debugging
@@ -96,8 +94,7 @@ public class SecurityFilterChainConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
             "http://localhost:4173", 
-            "https://alojando.duckdns.org",
-            "https://localhost"
+            "https://alojando.duckdns.org"
         )); 
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
