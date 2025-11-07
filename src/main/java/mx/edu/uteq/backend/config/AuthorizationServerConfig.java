@@ -48,9 +48,12 @@ public class AuthorizationServerConfig {
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                // Redirect URIs para web
                 .redirectUri("http://localhost:5173/callback")
                 .redirectUri("http://localhost:4173/callback")
                 .redirectUri("https://alojando.duckdns.org/callback")
+                // **NUEVO: Redirect URI para aplicación móvil (Deep Link)**
+                .redirectUri("alojando://callback")
                 .scope("read")
                 .scope("write")
                 .tokenSettings(TokenSettings.builder()
