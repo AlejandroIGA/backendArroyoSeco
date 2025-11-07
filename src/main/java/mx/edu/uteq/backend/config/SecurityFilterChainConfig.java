@@ -23,42 +23,17 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import org.springframework.context.annotation.Lazy;
-
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
-    private final AuthenticationManager authenticationManager;
-
-    // 1. Usamos @Lazy para romper el ciclo de dependencia
-    public SecurityFilterChainConfig(@Lazy AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
     @Bean
     @Order(1) 
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-
-        // --- INICIO DE LA SOLUCIÓN ---
-        
-        // 1. Obtenemos el AuthenticationManager desde el contexto de HttpSecurity.
-        //    Esto evita cualquier ciclo de dependencia.
-        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationConfiguration.class)
-            .getAuthenticationManager();
-
-        // 2. Le decimos al endpoint que use este AuthenticationManager,
-        //    haciendo el cast a AuthenticationProvider (que es seguro).
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-            .tokenEndpoint(tokenEndpoint -> tokenEndpoint
-                .authenticationProvider((AuthenticationProvider) authenticationManager) // <-- ¡LA CONEXIÓN!
-            );
-        
-        // --- FIN DE LA SOLUCIÓN ---
         
         http.cors(Customizer.withDefaults());
         http.csrf(csrf -> csrf
