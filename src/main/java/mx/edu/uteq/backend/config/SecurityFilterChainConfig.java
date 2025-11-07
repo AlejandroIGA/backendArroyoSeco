@@ -28,12 +28,6 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
-    private final AuthenticationManager authenticationManager;
-
-    public SecurityFilterChainConfig(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
     @Bean
     @Order(1) 
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
