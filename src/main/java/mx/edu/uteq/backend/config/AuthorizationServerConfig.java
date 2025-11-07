@@ -49,7 +49,7 @@ public class AuthorizationServerConfig {
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://localhost:5173/callback")
                 .redirectUri("http://localhost:4173/callback")
-                .redirectUri("https://www.produccionxd.com/callback")
+                .redirectUri("https://alojando.duckdns.org/callback")
                 .scope("read")
                 .scope("write")
                 .tokenSettings(TokenSettings.builder()

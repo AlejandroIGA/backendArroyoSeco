@@ -46,21 +46,16 @@ public class SecurityFilterChainConfig {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
-            .csrf(AbstractHttpConfigurer::disable) 
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+            .csrf(AbstractHttpConfigurer::disable)
             
             .authorizeHttpRequests(authorize -> authorize
                 // Endpoints públicos de autenticación
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/user/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/exchange-code").permitAll()
-                
-                // APIs protegidas por roles - requieren JWT
-                .requestMatchers("/api/properties/**").hasAuthority("ANFITRION") 
-                .requestMatchers("/api/bookings/**").hasAuthority("VISITANTE") 
-                .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "ANFITRION")
+
+                .requestMatchers("/api/bookings/**").hasAnyAuthority("VISITANTE", "PROPIETARIO") 
+                .requestMatchers("/api/user-profiles/**").hasAnyAuthority("VISITANTE", "PROPIETARIO")
                 
                 // Permite acceso al /error para debugging
                 .requestMatchers("/error").permitAll()
@@ -74,7 +69,15 @@ public class SecurityFilterChainConfig {
             )
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            );
+
+            )
+            .logout(logout -> logout
+            .logoutUrl("/api/auth/logout") 
+            .logoutSuccessUrl("https://alojando.duckdns.org/login") 
+            .invalidateHttpSession(true) 
+            .deleteCookies("JSESSIONID")
+            .permitAll()
+        );
             
         return http.build();
     }
@@ -86,7 +89,7 @@ public class SecurityFilterChainConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
             "http://localhost:4173", 
-            "https://www.produccionxd.com" 
+            "https://alojando.duckdns.org"
         )); 
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
