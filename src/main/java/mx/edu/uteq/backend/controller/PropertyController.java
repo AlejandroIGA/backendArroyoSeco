@@ -58,11 +58,15 @@ public class PropertyController {
             boolean isOwner = false;
             if (authentication != null && authentication.isAuthenticated()
                     && !(authentication instanceof AnonymousAuthenticationToken)) {
-
-                Long currentUserId = jwtService.getCurrentUserId();
-
-                if (property.getOwnerId() != null && currentUserId.equals(property.getOwnerId())) {
-                    isOwner = true;
+                
+                try {
+                    Long currentUserId = jwtService.getCurrentUserId();
+                    
+                    if (property.getOwnerId() != null && currentUserId != null && currentUserId.equals(property.getOwnerId())) {
+                        isOwner = true;
+                    }
+                } catch (Exception e) {
+                    isOwner = false;
                 }
             }
 
