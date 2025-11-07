@@ -31,6 +31,13 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
+    private final AuthenticationManager authenticationManager;
+
+    // 1. Usamos @Lazy para romper el ciclo de dependencia
+    public SecurityFilterChainConfig(@Lazy AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
     @Bean
     @Order(1) 
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -39,13 +46,13 @@ public class SecurityFilterChainConfig {
 
         // --- INICIO DE LA SOLUCIÓN ---
         
-        // 1. Obtenemos el AuthenticationManager desde el HttpSecurity context.
-        //    Esto rompe el ciclo de dependencia.
+        // 1. Obtenemos el AuthenticationManager desde el contexto de HttpSecurity.
+        //    Esto evita cualquier ciclo de dependencia.
         AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationConfiguration.class)
             .getAuthenticationManager();
 
-        // 2. Le decimos al endpoint de tokens que use nuestro AuthenticationManager,
-        //    haciendo el cast a AuthenticationProvider (que ahora es seguro).
+        // 2. Le decimos al endpoint que use este AuthenticationManager,
+        //    haciendo el cast a AuthenticationProvider (que es seguro).
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
             .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                 .authenticationProvider((AuthenticationProvider) authenticationManager) // <-- ¡LA CONEXIÓN!
