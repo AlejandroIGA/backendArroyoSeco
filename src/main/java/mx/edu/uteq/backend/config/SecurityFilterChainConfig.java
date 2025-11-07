@@ -6,6 +6,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,17 +23,31 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.context.annotation.Lazy;
+
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityFilterChainConfig {
 
+    private final AuthenticationManager authenticationManager;
+
+    // Esto es CORRECTO. @Lazy rompe el ciclo de dependencia.
+    public SecurityFilterChainConfig(@Lazy AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
     @Bean
     @Order(1) 
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+            .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                .authenticationProvider((AuthenticationProvider) this.authenticationManager) // <-- ¡LA CONEXIÓN!
+            );
         
         http.cors(Customizer.withDefaults());
         http.csrf(csrf -> csrf
