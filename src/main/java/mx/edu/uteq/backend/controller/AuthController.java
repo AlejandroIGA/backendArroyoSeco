@@ -18,6 +18,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException; 
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -68,19 +68,57 @@ public class AuthController {
                 securityContext
             );
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("authenticated", true);
-            response.put("username", authentication.getName());
-            response.put("sessionId", session.getId());
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             
-            return ResponseEntity.ok(response);
+            String auth = clientId + ":" + clientSecret;
+            String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes());
+            headers.setBasicAuth(encodedAuth); 
+
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("grant_type", "password");
+            body.add("username", loginRequest.getEmail());   // Usamos el email/pass del request
+            body.add("password", loginRequest.getPassword());
+            body.add("scope", "read write"); // O los scopes que necesites
             
-        } catch (AuthenticationException e) {
+            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
+            
+            ResponseEntity<Map> tokenResponse = restTemplate.exchange(
+                tokenUri,
+                HttpMethod.POST,
+                entity,
+                Map.class
+            );
+
+            Map<String, Object> responseBody = tokenResponse.getBody();
+            if (responseBody == null) {
+                throw new RuntimeException("El cuerpo de la respuesta de tokens está vacío.");
+            }
+
+            // Extraer rol
+            String accessToken = (String) responseBody.get("access_token");
+            String userRole = extractRoleFromJwt(accessToken);
+            responseBody.put("user_role", userRole);
+            
+            // Añadir info de sesión (útil para la web)
+            responseBody.put("authenticated", true);
+            responseBody.put("sessionId", session.getId());
+
+            return ResponseEntity.ok(responseBody);
+            
+        } catch (AuthenticationException | HttpClientErrorException e) {
+            // Captura si la autenticación falla O si el "password grant" falla
             Map<String, Object> error = new HashMap<>();
             error.put("authenticated", false);
             error.put("message", "Credenciales inválidas");
             
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        } catch (Exception e) {
+            // Captura cualquier otro error (ej. RestTemplate fallando)
+             Map<String, Object> error = new HashMap<>();
+             error.put("message", "Error al procesar el login: " + e.getMessage());
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 
