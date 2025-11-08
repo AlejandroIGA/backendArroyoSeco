@@ -52,7 +52,7 @@ public ResponseEntity<?> login(@RequestBody User user) {
 
     // -------------------------------------- Restablecer contraseña -----------------------------------------
 
-    @PostMapping("/reset")
+    /* @PostMapping("/reset")
     public ResponseEntity<?> sendResetCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");
 
@@ -68,7 +68,30 @@ public ResponseEntity<?> login(@RequestBody User user) {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("No se pudo enviar el código de verificación");
         }
+    } */
+
+
+    @PostMapping("/reset")
+    public ResponseEntity<?> sendResetCode(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+    if (email == null || email.isBlank()) {
+        return ResponseEntity.badRequest().body(Map.of("mensaje", "El email es obligatorio"));
     }
+
+    try {
+        String result = userService.sendResetCode(email);
+        return ResponseEntity.ok(Map.of("mensaje", result));
+
+    } catch (IllegalArgumentException e) {
+        // Aquí se responde si el email no está registrado
+        return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("mensaje", "No se pudo enviar el código de verificación"));
+    }
+}
 
 
     @PostMapping("/verify-code")
