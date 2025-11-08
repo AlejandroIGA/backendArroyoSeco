@@ -94,7 +94,8 @@ public class SecurityFilterChainConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
             "http://localhost:4173", 
-            "https://alojando.duckdns.org"
+            "https://alojando.duckdns.org",
+            "https://localhost"
         )); 
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
