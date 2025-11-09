@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import mx.edu.uteq.backend.dto.RegisterRequestDTO;
+import mx.edu.uteq.backend.service.JwtService;
 import mx.edu.uteq.backend.service.UserService;
 
 import java.util.Map;
@@ -14,10 +15,12 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
    /*  @PostMapping("/login")
@@ -127,5 +130,21 @@ public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> pay
 }
 
 // --------------------------------------------------------------------------------------------------------------
+
+@DeleteMapping("/delete")
+public ResponseEntity<?> deleteUser() {
+    try {
+        Long userId = jwtService.getCurrentUserId();
+        userService.deleteUser(userId);
+        return ResponseEntity.ok(Map.of("mensaje", "Información eliminada exitosamente"));
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(Map.of("mensaje", e.getMessage()));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("mensaje", "Error al eliminar el usuario"));
+    }
+}
 
 }
