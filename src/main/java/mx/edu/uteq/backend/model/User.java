@@ -60,8 +60,6 @@ public class User {
     // ⭐ Relación OneToMany con Booking (cascade ALL)
     @OneToMany(
         mappedBy = "user",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
         fetch = FetchType.LAZY
     )
     private List<Booking> bookings = new ArrayList<>();

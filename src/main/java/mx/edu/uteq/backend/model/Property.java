@@ -1,7 +1,9 @@
 package mx.edu.uteq.backend.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,11 +31,10 @@ public class Property {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // ⭐ IMPORTANTE: Este es el campo que referencia a User
-    // Aunque se llama "ownerId", es de tipo User (no Long)
+    // ⭐ Relación ManyToOne con User (dueño de la propiedad)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_profile_id", nullable = false)
-    @JsonIgnore  // ⭐ Evita recursión infinita en JSON
+    @JsonIgnore
     private User ownerId;
     
     private String name;
@@ -67,4 +69,15 @@ public class Property {
     @CollectionTable(name = "property_image", joinColumns = @JoinColumn(name = "property_id"))
     @Column(name = "image_url")
     private List<String> imagen;
+
+    // ⭐ IMPORTANTE: Relación OneToMany con Booking
+    // Cuando se elimina una Property, también se eliminan sus Bookings
+    @OneToMany(
+        mappedBy = "property",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    @JsonIgnore
+    private List<Booking> bookings = new ArrayList<>();
 }
