@@ -47,7 +47,7 @@ public class User {
     @JoinColumn(name = "user_profile_id", referencedColumnName = "id")
     private UserProfile userProfile;
 
-    @OneToMany(mappedBy = "userProfile", 
+    @OneToMany(mappedBy = "ownerId", 
             cascade = CascadeType.ALL,
             orphanRemoval = true, 
             fetch = FetchType.LAZY)
