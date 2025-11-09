@@ -28,7 +28,7 @@ public class Property{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "user_profile_id")
+    @JoinColumn(name = "user_profile_id", nullable = false)
     private User ownerId;
     
     private String name;

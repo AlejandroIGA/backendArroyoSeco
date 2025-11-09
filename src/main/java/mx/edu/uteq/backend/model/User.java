@@ -3,15 +3,20 @@ package mx.edu.uteq.backend.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -19,7 +24,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; 
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -42,12 +47,17 @@ public class User {
     @JoinColumn(name = "user_profile_id", referencedColumnName = "id")
     private UserProfile userProfile;
 
+    @OneToMany(mappedBy = "userProfile", 
+            cascade = CascadeType.ALL,
+            orphanRemoval = true, 
+            fetch = FetchType.LAZY)
+    private List<Property> properties = new ArrayList<>();
 
-    public Long getId() { 
+    public Long getId() {
         return id;
     }
 
-    public void setId(Long id) { 
+    public void setId(Long id) {
         this.id = id;
     }
 
