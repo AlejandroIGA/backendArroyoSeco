@@ -2,6 +2,7 @@ package mx.edu.uteq.backend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "password_reset")
@@ -11,8 +12,10 @@ public class PasswordReset {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ⭐ Relación con User + @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @Column(nullable = false, length = 10)
@@ -33,6 +36,7 @@ public class PasswordReset {
         this.createdAt = LocalDateTime.now();
     }
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }

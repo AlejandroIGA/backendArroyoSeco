@@ -43,16 +43,39 @@ public class User {
     @Column(name = "log_date")
     private Date logDate;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    // ⭐ Relación OneToOne con UserProfile
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_profile_id", referencedColumnName = "id")
     private UserProfile userProfile;
 
-    @OneToMany(mappedBy = "ownerId", 
-            cascade = CascadeType.ALL,
-            orphanRemoval = true, 
-            fetch = FetchType.LAZY)
+    // ⭐ Relación OneToMany con Property (cascade ALL)
+    @OneToMany(
+        mappedBy = "ownerId",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
     private List<Property> properties = new ArrayList<>();
 
+    // ⭐ Relación OneToMany con Booking (cascade ALL)
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private List<Booking> bookings = new ArrayList<>();
+
+    // ⭐ Relación OneToMany con PasswordReset (cascade ALL)
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private List<PasswordReset> passwordResets = new ArrayList<>();
+
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -107,5 +130,29 @@ public class User {
 
     public void setUserProfile(UserProfile userProfile) {
         this.userProfile = userProfile;
+    }
+
+    public List<Property> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<Property> properties) {
+        this.properties = properties;
+    }
+
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    public void setBookings(List<Booking> bookings) {
+        this.bookings = bookings;
+    }
+
+    public List<PasswordReset> getPasswordResets() {
+        return passwordResets;
+    }
+
+    public void setPasswordResets(List<PasswordReset> passwordResets) {
+        this.passwordResets = passwordResets;
     }
 }
