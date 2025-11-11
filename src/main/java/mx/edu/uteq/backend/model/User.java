@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "user")
 public class User {
@@ -49,28 +51,16 @@ public class User {
     private UserProfile userProfile;
 
     // ⭐ Relación OneToMany con Property (cascade ALL)
-    @OneToMany(
-        mappedBy = "ownerId",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "ownerId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Property> properties = new ArrayList<>();
 
     // ⭐ Relación OneToMany con Booking (cascade ALL)
-    @OneToMany(
-        mappedBy = "user",
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Booking> bookings = new ArrayList<>();
 
     // ⭐ Relación OneToMany con PasswordReset (cascade ALL)
-    @OneToMany(
-        mappedBy = "user",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PasswordReset> passwordResets = new ArrayList<>();
 
     // Getters y Setters
